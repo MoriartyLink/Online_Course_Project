@@ -1,0 +1,74 @@
+{% extends 'courses/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="bg-gradient-to-r from-indigo-500 to-blue-600 p-6 text-white">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-2xl font-bold">Exam Results</h1>
+                <p class="mt-1 opacity-90">{{ submission.lesson.title }}</p>
+            </div>
+            <div class="bg-white text-indigo-600 rounded-full px-4 py-1 font-bold text-xl">
+                {{ percentage|floatformat:0 }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-500">Student</h3>
+                <p class="mt-1 text-lg font-semibold">{{ submission.student.get_full_name|default:submission.student.username }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-500">Submitted At</h3>
+                <p class="mt-1 text-lg font-semibold">{{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-500">Score</h3>
+                <p class="mt-1 text-lg font-semibold">{{ submission.score }} / {{ total_possible }}</p>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Question Review</h2>
+
+            {% for answer in submission.answers.all %}
+            <div class="mb-6 p-4 border rounded-lg {% if answer.is_correct %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
+                <div class="flex justify-between items-start">
+                    <h3 class="font-medium {% if answer.is_correct %}text-green-800{% else %}text-red-800{% endif %}">
+                        Q{{ forloop.counter }}. {{ answer.question.text }}
+                    </h3>
+                    <span class="text-sm {% if answer.is_correct %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if answer.is_correct %}
+                        +{{ answer.question.points }} points
+                        {% else %}
+                        0 points
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="mt-3">
+                    <p class="text-sm text-gray-600">Your answer: {{ answer.selected_choice.text }}</p>
+                    {% if not answer.is_correct %}
+                    <p class="text-sm text-gray-600 mt-1">
+                        Correct answer: {{ answer.question.choices.get(is_correct=True).text }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex justify-between mt-8">
+            <a href="{% url 'lesson_detail' submission.lesson.course.slug submission.lesson.id %}"
+               class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition flex items-center">
+                <i class="fas fa-book-open mr-2"></i> Return to Lesson
+            </a>
+            <a href="#" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
+                <i class="fas fa-redo mr-2"></i> Retake Exam
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
